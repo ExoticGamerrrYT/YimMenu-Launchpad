@@ -22,6 +22,7 @@ In order to use the launchpad:
    > _You may want to make a shortcut to the desktop for the .exe._
 
    > **DO NOT DELETE ANY OF THE DLLs, IF YOU DO REPEAT FROM STEP 3**
+   **IF YOU GET ANY WINDOWS ALERT IGNORE IT**
 
 ## Contributing
 
