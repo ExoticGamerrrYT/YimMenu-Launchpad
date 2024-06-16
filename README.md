@@ -14,7 +14,7 @@ Seeing this problem, I decided to make a launchpad for the menu with [C++](https
 
 In order to use the launchpad:
 
-1. Download from the [releases page]().
+1. Download from the [releases page](https://github.com/ExoticGamerrrYT/YimMenu-Launchpad/releases/tag/releases).
 2. Make a folder anywhere you want to and add that folder to [Windows Defender exclusion list](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26).
 3. Extract the .zip in that folder.
 4. When you execute the .exe you can press `Inject` with the game open, obviously, and if something goes wrong check the console.
