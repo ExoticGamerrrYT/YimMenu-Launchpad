@@ -14,7 +14,7 @@ Seeing this problem, I decided to make a launchpad for the menu with [C++](https
 
 In order to use the launchpad:
 
-1. Download from the [releases page]().
+1. Download from the [releases page](https://github.com/ExoticGamerrrYT/YimMenu-Launchpad/releases/tag/releases).
 2. Make a folder anywhere you want to and add that folder to [Windows Defender exclusion list](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26).
 3. Extract the .zip in that folder.
 4. When you execute the .exe you can press `Inject` with the game open, obviously, and if something goes wrong check the console.
@@ -22,6 +22,30 @@ In order to use the launchpad:
    > _You may want to make a shortcut to the desktop for the .exe._
 
    > **DO NOT DELETE ANY OF THE DLLs, IF YOU DO REPEAT FROM STEP 3**
+
+## Contributing
+
+_**Please remember to contribute according to the [LICENSE](LICENSE).**_
+
+1. Clone the repo
+
+2. This project has been done with Curl, Openssl and ImGui. ImGui is downloaded locally in the project but Curl and Openssl have been downloaded with [vcpkg](https://github.com/microsoft/vcpkg), so if you use vcpkg do this:
+
+   ```bash
+   # Installing curl
+   vcpkg install curl
+
+   # Installing openssl
+   vcpkg install openssl
+   ```
+
+   > Note that here vcpkg is in the environment variables and that if you use Visual Studio you have to run this `vcpkg integrate install`.
+
+   > If you don't want to add vcpkg to the enviroment variables, in the root folder execute it with `.\vcpkg\vcpkg`.
+
+   **BUT** if you don't use vcpkg, download the headers and libraries from their websites and add them to your Visual Studio configuration.
+
+3. Open the `YimMenu Lauchpad.sln` file.
 
 ## License
 
