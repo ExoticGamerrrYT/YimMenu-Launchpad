@@ -37,15 +37,8 @@ int main(int, char**)
 {
     // !RUN UPDATE!
     Updater::UpdateYimMenu();
-    /*
-    if (counter > 0)
-    {
-        Updater::UpdateYimMenu();
-        counter--;
-    }
-    int counter = 1;*/
     // Create application window
-    //ImGui_ImplWin32_EnableDpiAwareness();
+    ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
     ::RegisterClassExW(&wc);
     HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"YimMenu Launchpad", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, 100, 100, 400, 182, nullptr, nullptr, wc.hInstance, nullptr);
