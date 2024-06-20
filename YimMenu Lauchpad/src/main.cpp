@@ -124,10 +124,12 @@ int main(int, char**)
                 
                 //std::string dll_path = Updater::dllPath;
                 //std::cout << dll_path << std::endl;
-                
-                if (InjectDLL(dllFile.string().c_str(), "GTA5.exe"))
+                if (dllFile != "")
                 {
-                    std::cout << "DLL injection successful." << std::endl;
+                    if (InjectDLL(dllFile.string().c_str(), "GTA5.exe"))
+                    {
+                        std::cout << "DLL injection successful." << std::endl;
+                    }
                 }
                 else
                 {
@@ -146,15 +148,20 @@ int main(int, char**)
                 std::cout << "SHA-256: " << sha256 << std::endl;
 
                 checkAndCreateFile(sha256);
+                std::cout << "DONE!" << std::endl;
                 // std::cout << "DLL Path: " << Updater::dllPath << std::endl;
             }
 
             if (ImGui::Button("Open Folder", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed open folder!" << std::endl;
+                HINSTANCE hInstanceFolder = ShellExecuteA(NULL, "open", yimMenuDir.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+                INT_PTR intPtr = reinterpret_cast<INT_PTR>(hInstanceFolder);
                 
-                ShellExecuteA(NULL, "open", yimMenuDir.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
-                
+                if (intPtr <= 32)
+                {
+                    std::cout << "A problem ocurred! Try pressing update." << std::endl;
+                }
             }
 
             ImGui::End();
