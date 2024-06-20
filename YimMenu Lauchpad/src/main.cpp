@@ -36,7 +36,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 int main(int, char**)
 {
     // !RUN UPDATE!
-    Updater::UpdateYimMenu();
+    //Updater::UpdateYimMenu();
     // Create application window
     ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
@@ -120,8 +120,9 @@ int main(int, char**)
             if (ImGui::Button("Inject", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed inject!" << std::endl;
-                std::string dll_path = Updater::dllPath;
-                std::cout << dll_path << std::endl;
+                //std::string dll_path = Updater::dllPath;
+                //std::cout << dll_path << std::endl;
+                /*
                 if (InjectDLL(dll_path.c_str(), "GTA5.exe"))
                 {
                     std::cout << "DLL injection successful." << std::endl;
@@ -130,20 +131,29 @@ int main(int, char**)
                 {
                     std::cerr << "DLL injection failed." << std::endl;
                 }
+                */
             }
 
             if (ImGui::Button("Update", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed update!" << std::endl;
-                Updater::UpdateYimMenu();
-                std::cout << "DLL Path: " << Updater::dllPath << std::endl;
+                std::string url = "https://github.com/YimMenu/YimMenu/releases/tag/nightly";
+                std::string pageContent = getURLContent(url);
+
+                std::string sha256 = extractSHA256(pageContent);
+                std::cout << "SHA-256: " << sha256 << std::endl;
+
+                checkAndCreateFile(sha256);
+                // std::cout << "DLL Path: " << Updater::dllPath << std::endl;
             }
 
             if (ImGui::Button("Open Folder", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed open folder!" << std::endl;
+                /*
                 std::string folder = Updater::folder;
                 ShellExecuteA(NULL, "open", folder.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+                */
             }
 
             ImGui::End();

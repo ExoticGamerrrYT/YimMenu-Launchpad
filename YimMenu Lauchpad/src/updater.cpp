@@ -1,188 +1,168 @@
-#include "updater.h"
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <filesystem>
-#include <curl/curl.h>
-#include <openssl/evp.h>
-#include <iomanip>
-#include <sstream>
+#include <string>
 #include <regex>
+#include <curl/curl.h>
+#include <filesystem>
+#include <fstream>
 
 namespace fs = std::filesystem;
 
-// Variables globales definidas externamente
-namespace Updater {
-    std::string appDataPath;
-    std::string folder;
-    std::string hashFilePath;
-    std::string savedHash;
-    std::string releaseUrl = "https://github.com/YimMenu/YimMenu/releases/tag/nightly";
-    std::string releasePage;
-    std::string expectedHash;
-    std::string dllUrl = "https://github.com/YimMenu/YimMenu/releases/download/nightly/YimMenu.dll";
-    std::string dllPath;
+const char* appdata = std::getenv("APPDATA");
+fs::path yimMenuDir = fs::path(appdata) / "YimMenu";
+fs::path hashFile = yimMenuDir / "hash.txt";
+fs::path dllFile = yimMenuDir / "YimMenu.dll";
+
+// Función para escribir los datos recibidos por CURL en un std::string
+static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
 }
 
-// Function to write data from curl into a string
-size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* s) {
-    size_t newLength = size * nmemb;
-    try {
-        s->append((char*)contents, newLength);
-    }
-    catch (std::bad_alloc& e) {
-        // Handle memory problem
-        return 0;
-    }
-    return newLength;
+// Función para escribir los datos recibidos por CURL en un archivo
+static size_t WriteFileCallback(void* ptr, size_t size, size_t nmemb, void* stream) {
+    std::ofstream* outFile = static_cast<std::ofstream*>(stream);
+    size_t totalSize = size * nmemb;
+    outFile->write(static_cast<const char*>(ptr), totalSize);
+    return totalSize;
 }
 
-// Function to download data from a URL
-std::string downloadData(const std::string& url) {
+// Función para obtener el contenido de una URL
+std::string getURLContent(const std::string& url) {
     CURL* curl;
     CURLcode res;
-    std::string response_string;
+    std::string readBuffer;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
-
-        // Set User-Agent to mimic a browser request
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-
-        // Follow redirections if any
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-        // Enable SSL verification
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
-
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
         res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
-            std::cerr << "cURL error: " << curl_easy_strerror(res) << std::endl;
-        }
-
         curl_easy_cleanup(curl);
     }
-    curl_global_cleanup();
-    return response_string;
+    return readBuffer;
 }
 
-// Function to download a file from a URL
-void downloadFile(const std::string& url, const std::string& filePath) {
-    CURL* curl;
-    CURLcode res;
-    FILE* fp;
-    errno_t err;
-
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-    if (curl) {
-        err = fopen_s(&fp, filePath.c_str(), "wb");
-        if (err != 0) {
-            std::cerr << "Error opening file: " << filePath << std::endl;
-            return;
-        }
-
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, nullptr);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-
-        // Set User-Agent to mimic a browser request
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-
-        // Follow redirections if any
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-        // Enable SSL verification
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
-
-        res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
-            std::cerr << "cURL error: " << curl_easy_strerror(res) << std::endl;
-        }
-
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
-    curl_global_cleanup();
-}
-
-// Function to extract SHA256 hash from the release page
-std::string extractSHA256FromReleasePage(const std::string& pageContent) {
-    std::regex sha256_regex(R"([a-f0-9]{64})");
+// Función para extraer el SHA-256 de la página
+std::string extractSHA256(const std::string& pageContent) {
+    std::regex sha256_regex(R"(([a-f0-9]{64})\s+YimMenu\.dll)");
     std::smatch match;
     if (std::regex_search(pageContent, match, sha256_regex)) {
-        return match.str();
+        return match[1].str();
     }
     else {
-        throw std::runtime_error("No SHA256 hash found on the release page");
+        return "SHA-256 hash not found";
     }
 }
 
-// Function to update YimMenu
-void Updater::UpdateYimMenu() {
-    // Obtain the path of %APPDATA%
-    char* rawAppDataPath = nullptr;
-    size_t requiredSize;
-    errno_t err = _dupenv_s(&rawAppDataPath, &requiredSize, "APPDATA");
-    if (err != 0 || rawAppDataPath == nullptr) {
-        std::cerr << "Error obtaining the path of %APPDATA%" << std::endl;
+// Función para leer el hash guardado en el archivo hash.txt
+std::string readSavedHash(const fs::path& hashFile) {
+    std::ifstream inFile(hashFile);
+    if (inFile.is_open()) {
+        std::string savedHash;
+        std::getline(inFile, savedHash);
+        inFile.close();
+        return savedHash;
+    }
+    return "";
+}
+
+// Función para guardar el hash en el archivo hash.txt
+void saveHash(const fs::path& hashFile, const std::string& hash) {
+    std::ofstream outFile(hashFile);
+    if (outFile.is_open()) {
+        outFile << hash;
+        outFile.close();
+    }
+    else {
+        std::cerr << "Error: Unable to write hash file." << std::endl;
+    }
+}
+
+// Nueva función para descargar un archivo desde una URL y guardarlo en la ruta especificada
+bool downloadFile(const std::string& url, const std::string& outFilename) {
+    CURL* curl;
+    CURLcode res;
+    std::ofstream outFile(outFilename, std::ios::binary);
+
+    if (!outFile.is_open()) {
+        std::cerr << "Error: Unable to open file for writing: " << outFilename << std::endl;
+        return false;
+    }
+
+    curl = curl_easy_init();
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteFileCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outFile);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // Follow redirects if necessary
+
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+            curl_easy_cleanup(curl);
+            return false;
+        }
+
+        curl_easy_cleanup(curl);
+    }
+
+    outFile.close();
+    return true;
+}
+/*
+void CheckDirs()
+{
+    std::string savedHash;
+
+    if (!fs::exists(yimMenuDir)) {
+        fs::create_directories(yimMenuDir);
+    }
+    if (fs::exists(hashFile)) {
+        savedHash = readSavedHash(hashFile);
+    }
+}
+*/
+
+void checkAndCreateFile(const std::string& hash) {
+    const char* appdata = std::getenv("APPDATA");
+    if (!appdata) {
+        std::cerr << "Error: APPDATA environment variable not found." << std::endl;
         return;
     }
-    appDataPath = rawAppDataPath;
-    std::cout << appDataPath << std::endl;
-    free(rawAppDataPath);
 
-    // Create folder in %APPDATA%
-    folder = appDataPath + "/YimMenu";
-    if (!fs::exists(folder)) {
-        fs::create_directory(folder);
+    fs::path yimMenuDir = fs::path(appdata) / "YimMenu";
+    fs::path hashFile = yimMenuDir / "hash.txt";
+    fs::path dllFile = yimMenuDir / "YimMenu.dll";
+    std::string savedHash;
+
+    // Crear carpeta si no existe
+    if (!fs::exists(yimMenuDir)) {
+        fs::create_directories(yimMenuDir);
     }
 
-    std::cout << folder << std::endl;
-
-    // Create hash.txt if it doesn't exist
-    hashFilePath = folder + "/hash.txt";
-    if (!fs::exists(hashFilePath)) {
-        std::ofstream hashFile(hashFilePath);
-        hashFile.close();
+    // Leer el hash guardado
+    if (fs::exists(hashFile)) {
+        savedHash = readSavedHash(hashFile);
     }
 
-    std::cout << hashFilePath << std::endl;
-
-    // Read current hash
-    std::ifstream hashFile(hashFilePath);
-    std::getline(hashFile, savedHash);
-    hashFile.close();
-
-    // Download and extract SHA256 from release page
-    releasePage = downloadData(releaseUrl);
-    expectedHash = extractSHA256FromReleasePage(releasePage);
-    std::cout << "Saved hash: " << savedHash << std::endl;
-    std::cout << "Expected hash: " << expectedHash << std::endl;
-
-    // Compare hashes
-    dllPath = folder + "/YimMenu.dll"; // Set the dllPath before comparison
-    if (savedHash != expectedHash) {
-        // Download YimMenu.dll if hash is different
-        downloadFile(dllUrl, dllPath);
-
-        // Save new hash in hash.txt
-        std::ofstream hashFileOut(hashFilePath);
-        hashFileOut << expectedHash;
-        hashFileOut.close();
+    // Comprobar si el hash ha cambiado o si el DLL no existe
+    if (savedHash != hash || !fs::exists(dllFile)) {
+        std::cout << "Downloading YimMenu.dll..." << std::endl;
+        if (downloadFile("https://github.com/YimMenu/YimMenu/releases/download/nightly/YimMenu.dll", dllFile.string())) {
+            saveHash(hashFile, hash);
+        }
+        else {
+            std::cerr << "Error: Failed to download YimMenu.dll" << std::endl;
+        }
     }
-
-    // Verify if YimMenu.dll doesn't exist and download if necessary
-    if (!fs::exists(dllPath)) {
-        downloadFile(dllUrl, dllPath);
+    else {
+        std::cout << "YimMenu.dll is up to date." << std::endl;
     }
-
-    std::cout << "DLL Path: " << dllPath << std::endl; // Print the dllPath
-    std::cout << "Process completed." << std::endl;
 }
+
+// Función para comprobar y crear la carpeta y archivo
+
+
