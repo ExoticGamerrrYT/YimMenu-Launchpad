@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include "updater.h"
 #include <iostream>
 #include <string>
 #include <regex>
@@ -14,13 +15,13 @@ fs::path yimMenuDir = fs::path(appdata) / "YimMenu";
 fs::path hashFile = yimMenuDir / "hash.txt";
 fs::path dllFile = yimMenuDir / "YimMenu.dll";
 
-// Función para escribir los datos recibidos por CURL en un std::string
+// Function to write data received by CURL into a std::string
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
 
-// Función para escribir los datos recibidos por CURL en un archivo
+// Function to write data received by CURL into a file
 static size_t WriteFileCallback(void* ptr, size_t size, size_t nmemb, void* stream) {
     std::ofstream* outFile = static_cast<std::ofstream*>(stream);
     size_t totalSize = size * nmemb;
@@ -28,7 +29,7 @@ static size_t WriteFileCallback(void* ptr, size_t size, size_t nmemb, void* stre
     return totalSize;
 }
 
-// Función para obtener el contenido de una URL
+// Function to get content from a URL
 std::string getURLContent(const std::string& url) {
     CURL* curl;
     CURLcode res;
@@ -45,7 +46,7 @@ std::string getURLContent(const std::string& url) {
     return readBuffer;
 }
 
-// Función para extraer el SHA-256 de la página
+// Function to extract SHA-256 from the page
 std::string extractSHA256(const std::string& pageContent) {
     std::regex sha256_regex(R"(([a-f0-9]{64})\s+YimMenu\.dll)");
     std::smatch match;
@@ -57,7 +58,7 @@ std::string extractSHA256(const std::string& pageContent) {
     }
 }
 
-// Función para leer el hash guardado en el archivo hash.txt
+// Function to read the saved hash from the file hash.txt
 std::string readSavedHash(const fs::path& hashFile) {
     std::ifstream inFile(hashFile);
     if (inFile.is_open()) {
@@ -69,7 +70,7 @@ std::string readSavedHash(const fs::path& hashFile) {
     return "";
 }
 
-// Función para guardar el hash en el archivo hash.txt
+// Function to save the hash to the file hash.txt
 void saveHash(const fs::path& hashFile, const std::string& hash) {
     std::ofstream outFile(hashFile);
     if (outFile.is_open()) {
@@ -81,7 +82,7 @@ void saveHash(const fs::path& hashFile, const std::string& hash) {
     }
 }
 
-// Nueva función para descargar un archivo desde una URL y guardarlo en la ruta especificada
+// New function to download a file from a URL and save it to the specified path
 bool downloadFile(const std::string& url, const std::string& outFilename) {
     CURL* curl;
     CURLcode res;
@@ -112,19 +113,6 @@ bool downloadFile(const std::string& url, const std::string& outFilename) {
     outFile.close();
     return true;
 }
-/*
-void CheckDirs()
-{
-    std::string savedHash;
-
-    if (!fs::exists(yimMenuDir)) {
-        fs::create_directories(yimMenuDir);
-    }
-    if (fs::exists(hashFile)) {
-        savedHash = readSavedHash(hashFile);
-    }
-}
-*/
 
 void checkAndCreateFile(const std::string& hash) {
     const char* appdata = std::getenv("APPDATA");
@@ -138,17 +126,17 @@ void checkAndCreateFile(const std::string& hash) {
     fs::path dllFile = yimMenuDir / "YimMenu.dll";
     std::string savedHash;
 
-    // Crear carpeta si no existe
+    // Create directory if it doesn't exist
     if (!fs::exists(yimMenuDir)) {
         fs::create_directories(yimMenuDir);
     }
 
-    // Leer el hash guardado
+    // Read the saved hash
     if (fs::exists(hashFile)) {
         savedHash = readSavedHash(hashFile);
     }
 
-    // Comprobar si el hash ha cambiado o si el DLL no existe
+    // Check if the hash has changed or if the DLL doesn't exist
     if (savedHash != hash || !fs::exists(dllFile)) {
         std::cout << "Downloading YimMenu.dll..." << std::endl;
         if (downloadFile("https://github.com/YimMenu/YimMenu/releases/download/nightly/YimMenu.dll", dllFile.string())) {
@@ -162,7 +150,3 @@ void checkAndCreateFile(const std::string& hash) {
         std::cout << "YimMenu.dll is up to date." << std::endl;
     }
 }
-
-// Función para comprobar y crear la carpeta y archivo
-
-

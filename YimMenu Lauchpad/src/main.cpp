@@ -5,6 +5,7 @@
 // - Getting Started      https://dearimgui.com/getting-started
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
+#define _CRT_SECURE_NO_WARNINGS
 
 #include "./imgui/imgui.h"
 #include "./imgui/imgui_impl_win32.h"
@@ -120,10 +121,11 @@ int main(int, char**)
             if (ImGui::Button("Inject", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed inject!" << std::endl;
+                
                 //std::string dll_path = Updater::dllPath;
                 //std::cout << dll_path << std::endl;
-                /*
-                if (InjectDLL(dll_path.c_str(), "GTA5.exe"))
+                
+                if (InjectDLL(dllFile.string().c_str(), "GTA5.exe"))
                 {
                     std::cout << "DLL injection successful." << std::endl;
                 }
@@ -131,7 +133,7 @@ int main(int, char**)
                 {
                     std::cerr << "DLL injection failed." << std::endl;
                 }
-                */
+                
             }
 
             if (ImGui::Button("Update", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
@@ -150,10 +152,9 @@ int main(int, char**)
             if (ImGui::Button("Open Folder", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed open folder!" << std::endl;
-                /*
-                std::string folder = Updater::folder;
-                ShellExecuteA(NULL, "open", folder.c_str(), NULL, NULL, SW_SHOWDEFAULT);
-                */
+                
+                ShellExecuteA(NULL, "open", yimMenuDir.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+                
             }
 
             ImGui::End();
