@@ -31,14 +31,11 @@ _**Please remember to contribute according to the [LICENSE](LICENSE).**_
 
 1. Clone the repo
 
-2. This project has been done with Curl, Openssl and ImGui. ImGui is downloaded locally in the project but Curl and Openssl have been downloaded with [vcpkg](https://github.com/microsoft/vcpkg), so if you use vcpkg do this:
+2. This project has been done with Curl and ImGui. ImGui is downloaded locally in the project but Curl has been downloaded via [vcpkg](https://github.com/microsoft/vcpkg), so if you use vcpkg do this:
 
    ```bash
    # Installing curl
    vcpkg install curl
-
-   # Installing openssl
-   vcpkg install openssl
    ```
 
    > Note that here vcpkg is in the environment variables and that if you use Visual Studio you have to run this `vcpkg integrate install`.
