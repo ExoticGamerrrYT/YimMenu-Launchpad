@@ -1,12 +1,3 @@
-// Dear ImGui: standalone example application for DirectX 11
-
-// Learn about Dear ImGui:
-// - FAQ                  https://dearimgui.com/faq
-// - Getting Started      https://dearimgui.com/getting-started
-// - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
-// - Introduction, links and more at the top of imgui.cpp
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "./imgui/imgui.h"
 #include "./imgui/imgui_impl_win32.h"
 #include "./imgui/imgui_impl_dx11.h"
@@ -25,6 +16,7 @@ static IDXGISwapChain* g_pSwapChain = nullptr;
 static bool                     g_SwapChainOccluded = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
+std::string url = "https://github.com/YimMenu/YimMenu/releases/tag/nightly";
 
 // Forward declarations of helper functions
 bool CreateDeviceD3D(HWND hWnd);
@@ -63,6 +55,7 @@ int main(int, char**)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 20.0f);// Font
+    io.IniFilename = NULL;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -111,7 +104,7 @@ int main(int, char**)
         // Start the Dear ImGui frame
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
-        io.IniFilename = NULL;
+        
         ImGui::NewFrame();
         {
             ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -141,7 +134,7 @@ int main(int, char**)
             if (ImGui::Button("Update", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed update!" << std::endl;
-                std::string url = "https://github.com/YimMenu/YimMenu/releases/tag/nightly";
+                
                 std::string pageContent = getURLContent(url);
 
                 std::string sha256 = extractSHA256(pageContent);
