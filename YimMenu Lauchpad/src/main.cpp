@@ -24,13 +24,11 @@ void CleanupDeviceD3D();
 void CreateRenderTarget();
 void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void SetImGuiStyle();
 
 // Main code
 int main(int, char**)
 {
-    // !RUN UPDATE!
-    //Updater::UpdateYimMenu();
-    // Create application window
     ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
     ::RegisterClassExW(&wc);
@@ -57,8 +55,8 @@ int main(int, char**)
     io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 20.0f);// Font
     io.IniFilename = NULL;
 
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
+    // Set style
+    SetImGuiStyle();
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
@@ -110,7 +108,7 @@ int main(int, char**)
             ImGui::SetNextWindowPos(ImVec2(0, 0));
             ImGui::SetNextWindowSize(ImVec2(400, 182));
 
-            ImGui::Begin("YimMenu Launchpad", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+            ImGui::Begin("YimMenu Launchpad", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
             if (ImGui::Button("Inject", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed inject!" << std::endl;
@@ -239,6 +237,16 @@ void CreateRenderTarget()
 void CleanupRenderTarget()
 {
     if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = nullptr; }
+}
+
+void SetImGuiStyle()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(17.0f / 255.0f, 17.0f / 255.0f, 17.0f / 255.0f, 1.0f); // rgb(17, 17, 17)
+    style.Colors[ImGuiCol_Button] = ImVec4(37.0f / 255.0f, 40.0f / 255.0f, 43.0f / 255.0f, 1.0f); // rgb(37, 40, 43)
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(125.0f / 255.0f, 133.0f / 255.0f, 140.0f / 255.0f, 1.0f); // rgb(125, 133, 140)
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(44.0f / 255.0f, 48.0f / 255.0f, 51.0f / 255.0f, 1.0f); // rgb(44, 48, 51)
 }
 
 // Forward declare message handler from imgui_impl_win32.cpp
