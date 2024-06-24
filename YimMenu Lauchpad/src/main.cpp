@@ -113,18 +113,9 @@ int main(int, char**)
             {
                 std::cout << "Pressed inject!" << std::endl;
                 
-                //std::string dll_path = Updater::dllPath;
-                //std::cout << dll_path << std::endl;
-                if (dllFile != "")
+                if (InjectDLL(dllFile.string().c_str(), "GTA5.exe"))
                 {
-                    if (InjectDLL(dllFile.string().c_str(), "GTA5.exe"))
-                    {
-                        std::cout << "DLL injection successful." << std::endl;
-                    }
-                }
-                else
-                {
-                    std::cerr << "DLL injection failed." << std::endl;
+                    std::cout << "DLL injection successful." << std::endl;
                 }
                 
             }
