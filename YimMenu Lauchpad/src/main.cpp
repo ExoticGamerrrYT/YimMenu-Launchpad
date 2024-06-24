@@ -17,6 +17,8 @@ static bool                     g_SwapChainOccluded = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
 std::string url = "https://github.com/YimMenu/YimMenu/releases/tag/nightly";
+static int WIDTH = 395;
+static int HEIGHT = 212;
 
 // Forward declarations of helper functions
 bool CreateDeviceD3D(HWND hWnd);
@@ -32,7 +34,7 @@ int main(int, char**)
     ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"YimMenu Launchpad", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, 100, 100, 400, 182, nullptr, nullptr, wc.hInstance, nullptr);
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"YimMenu Launchpad", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, 100, 100, WIDTH, HEIGHT, nullptr, nullptr, wc.hInstance, nullptr);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
@@ -64,6 +66,8 @@ int main(int, char**)
 
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    const char* items[] = { "Rockstar Games", "Epic Games", "Steam" };
+    int current_item = 0;
 
     // Main loop
     bool done = false;
@@ -102,13 +106,27 @@ int main(int, char**)
         // Start the Dear ImGui frame
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
-        
+
         ImGui::NewFrame();
         {
             ImGui::SetNextWindowPos(ImVec2(0, 0));
-            ImGui::SetNextWindowSize(ImVec2(400, 182));
+            ImGui::SetNextWindowSize(ImVec2(WIDTH, HEIGHT));
 
             ImGui::Begin("YimMenu Launchpad", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+
+            if (ImGui::Button("Launch Game", ImVec2(100, 26)))
+            {
+                std::cout << "Pressed launch!" << std::endl;
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Combo("", &current_item, items, IM_ARRAYSIZE(items)))
+            {
+
+                std::cout << "Option: " << items[current_item] << std::endl;
+            }
+
             if (ImGui::Button("Inject", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
             {
                 std::cout << "Pressed inject!" << std::endl;
@@ -131,7 +149,6 @@ int main(int, char**)
 
                 checkAndCreateFile(sha256);
                 std::cout << "DONE!" << std::endl;
-                // std::cout << "DLL Path: " << Updater::dllPath << std::endl;
             }
 
             if (ImGui::Button("Open Folder", ImVec2(ImGui::GetContentRegionAvail().x - 15, 40)))
