@@ -2,19 +2,18 @@
 #include <string>
 #include <windows.h>
 
-// Función para lanzar GTA V usando ShellExecute
 void LaunchGTA(const std::string& url) {
-    // Convertir std::string a std::wstring
+    // Convert std::string to std::wstring
     std::wstring wide_url(url.begin(), url.end());
 
-    // Usar ShellExecute para abrir la URL
+    // Use ShellExecute
     HINSTANCE result = ShellExecuteW(NULL, L"open", wide_url.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
-    // Verificar el resultado
+    // Verify
     if ((int)result > 32) {
-        std::wcout << L"GTA V lanzado correctamente." << std::endl;
+        std::wcout << L"GTA V launched correctly." << std::endl;
     }
     else {
-        std::wcerr << L"Error al intentar lanzar GTA V: " << (int)result << std::endl;
+        std::wcerr << L"Error when launching GTA V: " << (int)result << std::endl;
     }
 }
