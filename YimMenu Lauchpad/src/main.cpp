@@ -8,6 +8,7 @@
 
 #include "updater.h"
 #include "injector.h"
+#include "launcher.h"
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -17,6 +18,8 @@ static bool                     g_SwapChainOccluded = false;
 static UINT                     g_ResizeWidth = 0, g_ResizeHeight = 0;
 static ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
 std::string url = "https://github.com/YimMenu/YimMenu/releases/tag/nightly";
+std::string epic_url = "com.epicgames.launcher://apps/0584d2013f0149a791e7b9bad0eec102%3A6e563a2c0f5f46e3b4e88b5f4ed50cca%3A9d2d0eb64d5c44529cece33fe2a46482?action=launch&silent=true";
+
 static int WIDTH = 395;
 static int HEIGHT = 212;
 
@@ -117,6 +120,14 @@ int main(int, char**)
             if (ImGui::Button("Launch Game", ImVec2(100, 26)))
             {
                 std::cout << "Pressed launch!" << std::endl;
+                if (current_item == 1)
+                {
+                    LaunchGTA(epic_url);
+                }
+                else
+                {
+                    std::cout << "Please launch the game manually, support for other platforms in work!" << std::endl;
+                }
             }
 
             ImGui::SameLine();
